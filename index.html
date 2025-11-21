@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦠 Malaria Diagnosis AI System</title>
+    <!-- Use Tailwind CSS for better responsiveness and modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #004aad;
+            --secondary-color: #38bdf8;
+            --background-light: #e0efff;
+            --background-dark: #0d1117;
+            --card-light: #ffffff;
+            --card-dark: #1f2937;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .light {
+            background: linear-gradient(to right, var(--background-light), var(--card-light));
+            color: #1f2937;
+        }
+
+        .dark {
+            background: var(--background-dark);
+            color: #f3f4f6;
+        }
+        
+        .card-container {
+            border-radius: 1.5rem; /* 24px */
+            box-shadow: rgba(0,0,0,0.1) 0px 8px 24px;
+            padding: 2rem;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .light .card-container { background: var(--card-light); }
+        .dark .card-container { background: var(--card-dark); box-shadow: rgba(255, 255, 255, 0.05) 0px 8px 24px; }
+
+        .header-title { font-size: 1.875rem; font-weight: 700; color: var(--primary-color); }
+        .dark .header-title { color: var(--secondary-color); }
+
+        .preview-img {
+            width: 300px; height: 300px;
+            object-fit: cover;
+            border-radius: 1rem;
+            border: 3px solid #e5e7eb;
+            transition: border-color 0.3s;
+        }
+        .dark .preview-img { border-color: #4b5563; }
+        
+        .demo-gallery img {
+            width: 100px; height: 100px;
+            object-fit: cover;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: transform .2s ease-in-out, box-shadow .2s;
+        }
+        .demo-gallery img:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .dark .demo-gallery img:hover { box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1); }
+
+        .spinner {
+            display: none;
+            width: 40px; height: 40px;
+            border: 4px solid rgba(0, 74, 173, 0.2);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            margin: 1rem auto;
+        }
+        .dark .spinner { border-top: 4px solid var(--secondary-color); }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .preview-img {
+                width: 100%;
+                height: 200px;
+                margin-bottom: 1rem;
+            }
+            .result-panel {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .header-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+
+<body class="{{ saved_theme }} flex flex-col items-center py-10">
+
+<button id="themeToggle" class="fixed right-5 top-5 p-2 rounded-full shadow-lg transition duration-300 
+    {% if saved_theme == 'dark' %} bg-gray-700 text-yellow-300 hover:bg-gray-600 {% else %} bg-white text-gray-800 hover:bg-gray-100 {% endif %}">
+    {% if saved_theme == 'dark' %} ☀ Light Mode {% else %} 🌙 Dark Mode {% endif %}
+</button>
+
+<div class="container mx-auto px-4 w-full max-w-4xl">
+    <div class="card-container">
+        <h2 class="text-center header-title mb-2">🧪 Malaria Detection using AI</h2>
+        <p class="text-center text-sm mb-6 opacity-75">Upload a blood smear image for diagnosis and visual explanation (Grad-CAM).</p>
+
+        <!-- Form: Fixed Action to prevent 405 error on sample pages -->
+        <form method="POST" enctype="multipart/form-data" action="/">
+            <label class="block mb-2 text-sm font-medium">Select Image (PNG or JPEG)</label>
+            <input type="file" name="file" class="block w-full text-sm rounded-lg cursor-pointer p-2 
+                {% if saved_theme == 'dark' %} bg-gray-600 text-white border border-gray-500 {% else %} bg-gray-50 text-gray-900 border border-gray-300 {% endif %}" required>
+            
+            <!-- Hidden input to maintain theme state on POST submission -->
+            <input type="hidden" name="saved_theme" id="currentThemeInput" value="{{ saved_theme }}">
+
+            <div id="loadingSpinner" class="spinner"></div>
+            <button id="analyzeBtn" type="submit" class="mt-4 w-full py-2 px-4 rounded-lg font-semibold text-white transition duration-300 
+                bg-blue-600 hover:bg-blue-700 shadow-md">
+                🔍 Analyze Image
+            </button>
+        </form>
+
+        <h5 class="text-lg font-semibold mt-8 mb-4">Try Sample Images</h5>
+        <div class="demo-gallery flex justify-center flex-wrap">
+            <!-- Ensure sample image names match files in the /static/samples folder -->
+            <img src="https://placehold.co/100x100/374151/ffffff?text=Infected+1" alt="Infected Sample 1" onclick="autoFill('Infected1.jpeg')">
+            <img src="https://placehold.co/100x100/374151/ffffff?text=Infected+2" alt="Infected Sample 2" onclick="autoFill('Infected2.jpeg')">
+            <img src="https://placehold.co/100x100/374151/ffffff?text=Healthy+1" alt="Uninfected Sample 1" onclick="autoFill('Uninfected1.png')">
+            <img src="https://placehold.co/100x100/374151/ffffff?text=Healthy+2" alt="Uninfected Sample 2" onclick="autoFill('Uninfected2.png')">
+        </div>
+
+        {% if error_message %}
+        <div class="mt-6 p-4 rounded-lg bg-red-100 text-red-800 border border-red-300 text-center">
+            <p>{{ error_message }}</p>
+        </div>
+        {% endif %}
+
+        {% if label %}
+        <!-- Result box: Uses p-3 for reduced vertical size (was p-4) -->
+        <div class="mt-6 p-3 rounded-xl text-center shadow-inner 
+            {% if label == 'Parasitized' %} bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 {% else %} bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 {% endif %}">
+            <h4 class="text-xl font-bold mb-0.5">Diagnosis: {{ label }}</h4>
+            <p class="text-base font-medium">Confidence: <span class="font-mono">{{ confidence }}%</span></p>
+        </div>
+        {% endif %}
+
+        <div class="result-panel flex justify-center gap-8 mt-8 flex-wrap">
+            {% if file_path %}
+                <div class="flex flex-col items-center">
+                    <h6 class="text-base font-medium mb-2 opacity-80">Input Blood Smear</h6>
+                    <img src="{{ file_path }}" class="preview-img" alt="Input Image">
+                </div>
+            {% endif %}
+            
+            {% if gradcam %}
+                <div class="flex flex-col items-center">
+                    <h6 class="text-base font-medium mb-2 opacity-80">Grad-CAM Heatmap (AI Focus)</h6>
+                    <img src="{{ gradcam }}" class="preview-img" alt="Grad-CAM Heatmap">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <p class="text-center mt-6 text-sm opacity-50">⚕ AI-Assisted Diagnostics for Cell Classification</p>
+</div>
+
+<script>
+    const themeBtn = document.getElementById("themeToggle");
+    const currentThemeInput = document.getElementById("currentThemeInput");
+
+    // Function to set theme classes and update button text
+    function updateTheme(theme) {
+        if (theme === "dark") {
+            document.body.classList.add("dark");
+            themeBtn.innerHTML = "☀ Light Mode";
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.body.classList.remove("dark");
+            themeBtn.innerHTML = "🌙 Dark Mode";
+            localStorage.setItem("theme", "light");
+        }
+        // Update the hidden input field for form submission
+        if (currentThemeInput) {
+            currentThemeInput.value = theme;
+        }
+    }
+
+    // Initialize Theme on load (based on flask variable if available, then local storage)
+    const initialTheme = "{{ saved_theme }}" || localStorage.getItem("theme") || "light";
+    updateTheme(initialTheme);
+    
+    // Theme Toggle Handler
+    themeBtn.onclick = () => {
+        const newTheme = document.body.classList.contains("dark") ? "light" : "dark";
+        updateTheme(newTheme);
+        
+        // Change the URL's 'theme' query parameter without reloading the page
+        const url = new URL(window.location);
+        url.searchParams.set('theme', newTheme);
+        window.history.pushState({}, '', url);
+
+        // Update the button's class and text based on the new theme
+        themeBtn.classList.toggle('bg-gray-700');
+        themeBtn.classList.toggle('text-yellow-300');
+        themeBtn.classList.toggle('hover:bg-gray-600');
+        themeBtn.classList.toggle('bg-white');
+        themeBtn.classList.toggle('text-gray-800');
+        themeBtn.classList.toggle('hover:bg-gray-100');
+    };
+
+    // Show spinner on form submission
+    document.querySelector("form").addEventListener("submit", (e) => {
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput.files.length > 0) {
+             document.getElementById("loadingSpinner").style.display = "block";
+             document.getElementById("analyzeBtn").disabled = true;
+             document.getElementById("analyzeBtn").innerHTML = "Processing...";
+        } else {
+             // Prevent submission if no file is selected and not using a sample
+             e.preventDefault();
+             // Changed to a custom alert since the platform doesn't support window.alert()
+             const messageDiv = document.createElement('div');
+             messageDiv.className = 'mt-6 p-4 rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-300 text-center';
+             messageDiv.innerHTML = '<p>⚠️ Please select a file to analyze.</p>';
+             document.querySelector('.card-container').appendChild(messageDiv);
+             setTimeout(() => messageDiv.remove(), 3000);
+        }
+    });
+
+    // Handle Sample Image Clicks
+    function autoFill(filename){
+        const theme = document.body.classList.contains("dark") ? "dark" : "light";
+        // Redirect to the sample route using a GET request
+        window.location.href = `/sample/${filename}?theme=${theme}`;
+    }
+</script>
+
+</body>
+</html>
