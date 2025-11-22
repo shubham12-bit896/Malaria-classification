@@ -1,36 +1,41 @@
 
-```md
-# 🦠 Malaria Cell Classification using Deep Learning
+# 🦠 Malaria Cell Classification using Deep Learning  
 
-![Python](https://img.shields.io/badge/Python-3.10-blue)
-![Flask](https://img.shields.io/badge/Flask-Web%20App-black)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-CNN-orange)
-![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
-![License](https://img.shields.io/badge/License-MIT-purple)
-
-A deep learning–based web application that classifies microscopic blood smear images as **Infected (Parasitized)** or **Uninfected** using a trained CNN model.  
-It includes a modern **Flask Web Interface**, allowing users to upload blood cell images and receive predictions instantly.
+A deep-learning powered web application that classifies microscopic blood smear images as **Parasitized (Infected)** or **Uninfected** using a trained Convolutional Neural Network (CNN).  
+The project includes an easy-to-use **Flask web interface** for real-time predictions.
 
 ---
 
-## 🚀 Features
+### 📌 Tech Stack
 
-- 🧬 Detects **Malaria-infected vs Healthy cells**
-- 🧠 Built using TensorFlow/Keras CNN architecture
-- 🖼 Real-time image upload and prediction
-- 📊 Based on NIH Microscopic Image Dataset
-- 💻 User-friendly web application using Flask
+| Category | Tools |
+|---------|-------|
+| Language | Python |
+| Framework | Flask |
+| Deep Learning | TensorFlow / Keras |
+| Frontend | HTML, CSS |
+| Deployment | Localhost (Future: Cloud) |
 
 ---
 
-## 📥 Download Trained Model
+### 🔥 Features
 
-GitHub does not allow large binary files, so the trained model is stored externally.
+✔ Real-time malaria cell detection  
+✔ Upload-based prediction system  
+✔ Trained on NIH malaria cell dataset  
+✔ Clean and interactive UI  
+✔ Lightweight + reproducible setup  
 
-👉 **Download Model Weights (.h5):**  
-🔗 https://drive.google.com/file/d/1HUdTj4PLBDuKOpPBNAhDDF_Mq49UgtPc/view?usp=drive_link
+---
 
-After downloading, create a folder named `model` and place the file inside:
+### 📥 Model Download (Required)
+
+Due to file size limitations, the trained `.h5` model is hosted externally.
+
+👉 Download model file:  
+🔗 **https://drive.google.com/file/d/1HUdTj4PLBDuKOpPBNAhDDF_Mq49UgtPc/view?usp=drive_link**
+
+Place it inside:
 
 ```
 
@@ -38,97 +43,80 @@ model/malaria_model_fixed.h5
 
 ````
 
+(If `model/` folder does not exist, create it.)
+
 ---
 
-## 📦 Installation & Setup
-
-### 1️⃣ Clone the Repository
+### ⚙️ Installation & Running the App
 
 ```sh
+# Clone the project
 git clone https://github.com/shubham12-bit896/Malaria-classification.git
 cd Malaria-classification
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+python app.py
 ````
 
-### 2️⃣ Install Dependencies
+Now open your browser and go to:
+👉 `http://127.0.0.1:5000/`
 
-```sh
-pip install -r requirements.txt
-```
-
-### 3️⃣ Add Model File
-
-Place the downloaded `.h5` model in:
-
-```
-model/malaria_model_fixed.h5
-```
-
-### 4️⃣ Run the Application
-
-```sh
-python app.py
-```
-
-Then open in browser:
-
-```
-http://127.0.0.1:5000/
-```
-
-Upload a microscopy image → Model predicts infection status.
+Upload an image → Get prediction 🎯
 
 ---
 
-## 📊 Dataset Used
-
-* NIH Malaria Dataset (27,558 cell images)
-* Two classes:
-
-  * 🔴 Parasitized
-  * 🟢 Uninfected
-
----
-
-## 📂 Project Structure
+### 📂 Project Structure
 
 ```
+│── app.py
+│── requirements.txt
+│── README.md
+│
 ├── model/
-│   └── malaria_model_fixed.h5  (download manually)
+│   └── malaria_model_fixed.h5   (download manually)
+│
 ├── static/
 │   ├── uploads/
 │   └── samples/
-├── templates/
-│   └── index.html
-├── app.py
-├── requirements.txt
-└── README.md
+│
+└── templates/
+    └── index.html
 ```
 
 ---
 
-## 💡 Future Improvements
+### 📊 Dataset
 
-* Deploy using Render / HuggingFace / Streamlit
-* Add Grad-CAM heatmap for explainability
-* Improve accuracy using VGG16 / MobileNet
-* Add REST API or mobile app support
+Dataset used: **NIH Malaria Cell Dataset**
 
----
+* 27,558 total microscopic images
+* Two categories:
 
-## 🤝 Contributing
-
-Contributions and suggestions are welcome.
-Feel free to open an issue or create a pull request.
+  * 🦠 Parasitized (Infected)
+  * 🧪 Uninfected
 
 ---
 
-## 👤 Author
+### 🚀 Future Enhancements
+
+🔹 Deploy app using **Render / HuggingFace Spaces / Streamlit**
+🔹 Add **Grad-CAM explainability visualization**
+🔹 Improve model accuracy using **VGG16 / ResNet / MobileNet**
+🔹 Add API support for integration with clinical software
+
+---
+
+### 🧑‍💻 Author
 
 **Shubham Katore**
-GitHub: `shubham12-bit896`
+📍 Health Informatics & AI Projects
+🔗 GitHub: `shubham12-bit896`
 
 ---
 
-⭐ If you found this project useful, please **Star this repository!**
+⭐ If you found this project helpful, please consider **starring the repo** — it motivates further improvements!
 
 
